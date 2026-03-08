@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Lotto Elite - iPhone 17 Air</title>
+    <style>
+        :root {
+            --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --glass-bg: rgba(255, 255, 255, 0.08);
+            --glass-border: rgba(255, 255, 255, 0.15);
+            --accent-color: #00f2fe;
+            /* 로또 공 색상 가이드 */
+            --color-1: #fbc400; /* 1-10 */
+            --color-2: #69c8f2; /* 11-20 */
+            --color-3: #ff7272; /* 21-30 */
+            --color-4: #aaaaaa; /* 31-40 */
+            --color-5: #b0d840; /* 41-45 */
+        }
+
+        body {
+            margin: 0; padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background: radial-gradient(circle at top, #1a1a2e, #0f0c29);
+            height: 100vh; display: flex; justify-content: center; align-items: center;
+            color: white; overflow: hidden;
+        }
+
+        .app-container {
+            width: 90%; max-width: 400px; height: 85vh;
+            background: var(--glass-bg); backdrop-filter: blur(30px); -webkit-backdrop-filter: blur(30px);
+            border: 1px solid var(--glass-border); border-radius: 44px;
+            display: flex; flex-direction: column; padding: 35px 25px; box-sizing: border-box;
+            box-shadow: 0 40px 100px rgba(0,0,0,0.6);
+            position: relative; overflow: hidden;
+        }
+
+        /* 세밀하게 다듬은 프리미엄 SVG 워터마크 */
+        .watermark-svg {
+            position: absolute;
+            top: 55%; left: 50%;
+            transform: translate(-50%, -50%);
+            width: 90%; opacity: 0.04;
+            z-index: -1; pointer-events: none;
+        }
+
+        header h1 {
+            text-align: center; font-weight: 200; font-size: 1.6rem; letter-spacing: 7px; margin: 0 0 40px 0;
+            background: linear-gradient(to right, #fff, var(--accent-color));
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+        }
+
+        /* 상단 번호 표시 영역 */
+        .number-display { display: flex; justify-content: space-between; gap: 5px; margin-bottom: 50px; }
+
+        .ball {
+            width: 48px; height: 48px; background: rgba(255,255,255,0.05); border-radius: 50%;
+            display: flex; justify-content: center; align-items: center; color: #fff;
+            font-weight: 800; font-size: 1.1rem; box-shadow: 0 8px 15px rgba(0,0,0,0.2);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            transform: scale(0);
+        }
+
+        .ball.show { transform: scale(1.1); }
+
+        /* 로그 영역 */
+        .history-section { flex-grow: 1; overflow: hidden; }
+        .history-title {
+            font-size: 0.7rem; color: rgba(255,255,255,0.3); margin-bottom: 15px;
+            text-transform: uppercase; letter-spacing: 2px; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 5px;
+        }
+
+        .log-item {
+            background: rgba(0,0,0,0.2); padding: 15px 10px; border-radius: 18px; margin-bottom: 12px;
+            display: flex; justify-content: space-around; animation: slideIn 0.4s ease-out forwards;
+            border: 1px solid rgba(255,255,255,0.03);
+        }
+
+        .log-num { font-weight: 900; font-size: 1.1rem; text-shadow: 0 0 10px rgba(0,0,0,0.5); }
+
+        @keyframes slideIn { from { opacity: 0; transform: translateX(-10px); } to { opacity: 1; transform: translateX(0); } }
+
+        /* 컨트롤 버튼 영역 */
+        .controls { display: flex; flex-direction: column; gap: 15px; align-items: flex-start; z-index: 10; }
+
+        .generate-btn {
+            width: 100%; background: var(--primary-gradient); border: none; padding: 22px;
+            border-radius: 22px; color: white; font-size: 1.2rem; font-weight: 700;
+            cursor: pointer; transition: all 0.3s ease; box-shadow: 0 15px 35px rgba(118, 75, 162, 0.3);
+        }
+
+        .reset-btn {
+            background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 8px 18px; border-radius: 12px; color: rgba(255, 255, 255, 0.4);
+            font-size: 0.8rem; font-weight: 500; cursor: pointer; transition: all 0.2s;
+        }
+
+        .reset-btn:active { background: rgba(255, 70, 70, 0.15); color: #ff7272; }
+        .generate-btn:active { transform: scale(0.97); filter: brightness(1.1); }
+    </style>
+</head>
+<body>
+
+<div class="app-container">
+    <svg class="watermark-svg" viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg">
+        <path d="M100 200 C100 120 180 120 200 200 C220 280 300 280 300 200 C300 120 220 120 200 200 C180 280 100 280 100 200" 
+              fill="none" stroke="white" stroke-width="0.8" />
+        <circle cx="200" cy="200" r="145" fill="none" stroke="white" stroke-width="0.4" />
+        <circle cx="200" cy="200" r="175" fill="none" stroke="white" stroke-width="0.2" stroke-dasharray="8,8" />
+        <text x="50%" y="208" text-anchor="middle" fill="white" font-size="24" font-weight="100" style="letter-spacing: 12px; opacity: 0.8;">ELITE</text>
+    </svg>
+
+    <header>
+        <h1>LOTTO ELITE</h1>
+    </header>
+
+    <div class="number-display" id="ballContainer">
+        <div class="ball">?</div><div class="ball">?</div><div class="ball">?</div>
+        <div class="ball">?</div><div class="ball">?</div><div class="ball">?</div>
+    </div>
+
+    <div class="history-section">
+        <div class="history-title">History Logs</div>
+        <div id="logContainer"></div>
+    </div>
+
+    <div class="controls">
+        <button class="reset-btn" onclick="resetApp()">초기화</button>
+        <button class="generate-btn" onclick="generateLotto()">로또번호 생성</button>
+    </div>
+</div>
+
+<script>
+    let logData = [];
+
+    function getBallColor(num) {
+        if (num <= 10) return '#fbc400';
+        if (num <= 20) return '#69c8f2';
+        if (num <= 30) return '#ff7272';
+        if (num <= 40) return '#aaaaaa';
+        return '#b0d840';
+    }
+
+    function generateLotto() {
+        let numbers = [];
+        while(numbers.length < 6) {
+            let r = Math.floor(Math.random() * 45) + 1;
+            if(!numbers.includes(r)) numbers.push(r);
+        }
+        numbers.sort((a, b) => a - b);
+
+        const balls = document.querySelectorAll('.ball');
+        balls.forEach((ball, index) => {
+            ball.style.transform = 'scale(0)';
+            setTimeout(() => {
+                ball.textContent = numbers[index];
+                const color = getBallColor(numbers[index]);
+                ball.style.backgroundColor = color;
+                ball.style.color = (numbers[index] <= 10) ? '#333' : '#fff';
+                ball.style.transform = 'scale(1.1)';
+            }, index * 80);
+        });
+
+        updateLog(numbers);
+    }
+
+    function updateLog(nums) {
+        const logContainer = document.getElementById('logContainer');
+        logData.unshift(nums);
+        if (logData.length > 5) logData.pop();
+
+        logContainer.innerHTML = logData.map(entry => `
+            <div class="log-item">
+                ${entry.map(n => `<span class="log-num" style="color:${getBallColor(n)}">${n}</span>`).join('')}
+            </div>
+        `).join('');
+    }
+
+    function resetApp() {
+        logData = [];
+        document.getElementById('logContainer').innerHTML = '';
+        const balls = document.querySelectorAll('.ball');
+        balls.forEach(ball => {
+            ball.textContent = '?';
+            ball.style.backgroundColor = 'rgba(255,255,255,0.05)';
+            ball.style.color = '#fff';
+            ball.style.transform = 'scale(1)';
+        });
+    }
+</script>
+
+</body>
+</html>

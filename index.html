@@ -5,24 +5,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Lotto Elite - Premium Edition</title>
     
-    <link rel="apple-touch-icon" href="icon_clean.png">
+    <link rel="apple-touch-icon" href="lotto_logo.png">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 
     <style>
         :root {
             --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            /* 글래스모피즘 효과를 위한 배경 */
             --glass-bg: rgba(255, 255, 255, 0.08);
             --glass-border: rgba(255, 255, 255, 0.15);
             --accent-color: #00f2fe;
-            
-            /* 로또 공 색상 가이드 */
-            --color-1: #fbc400; /* 1-10 */
-            --color-2: #69c8f2; /* 11-20 */
-            --color-3: #ff7272; /* 21-30 */
-            --color-4: #aaaaaa; /* 31-40 */
-            --color-5: #b0d840; /* 41-45 */
+            --color-1: #fbc400; --color-2: #69c8f2; --color-3: #ff7272; --color-4: #aaaaaa; --color-5: #b0d840;
         }
 
         body {
@@ -42,19 +35,27 @@
             position: relative; overflow: hidden;
         }
 
-        /* [요청반영 1] 처음 디자인한 세련된 SVG 워터마크 통합 */
-        .watermark-svg {
+        /* [요청반영] 옆으로 압축되지 않도록 비율 고정 처리 (PNG 이미지 사용) */
+        .background-logo {
             position: absolute;
-            top: 50%; left: 50%;
+            top: 55%; left: 50%;
             transform: translate(-50%, -50%);
-            width: 85%; opacity: 0.06; /* 은은하게 (6%) */
-            z-index: -1; pointer-events: none;
+            width: 100%; /* 너비는 컨테이너에 맞춤 */
+            height: 100%; /* 높이도 컨테이너에 맞춤 */
+            opacity: 0.1; /* 은은하게 (10%) */
+            z-index: -1;
+            pointer-events: none;
+            
+            /* 핵심 속성: 이미지가 절대 찌그러지지 않고 비율을 유지함 */
+            object-fit: contain;
+            
+            /* 이미지 색감을 배경 그라데이션에 녹아들게 처리 */
+            filter: brightness(0.9) saturate(1.2); 
         }
 
-        /* [요청반영 2] 앱 타이틀 글씨 진하게 */
         header h1 {
             text-align: center; 
-            font-weight: 800; /* 아주 진하게 */
+            font-weight: 800; /* 진하게 */
             font-size: 1.8rem; letter-spacing: 5px; margin: 0 0 40px 0;
             background: linear-gradient(to right, #fff, var(--accent-color));
             -webkit-background-clip: text; -webkit-text-fill-color: transparent;
@@ -74,7 +75,6 @@
 
         .history-section { flex-grow: 1; overflow: hidden; }
         
-        /* [요청반영 2] 로그 제목 글씨 진하게 */
         .history-title {
             font-size: 0.8rem; 
             font-weight: 700; /* 진하게 */
@@ -94,7 +94,6 @@
 
         .controls { display: flex; flex-direction: column; gap: 15px; align-items: flex-start; z-index: 10; }
 
-        /* [요청반영 2] 생성 버튼 글씨 진하게 */
         .generate-btn {
             width: 100%; background: var(--primary-gradient); border: none; padding: 22px;
             border-radius: 22px; color: white; font-size: 1.3rem; 
@@ -102,11 +101,10 @@
             cursor: pointer; transition: all 0.3s ease; box-shadow: 0 15px 35px rgba(118, 75, 162, 0.3);
         }
 
-        /* [요청반영 2] 초기화 버튼 글씨 진하게 */
         .reset-btn {
             background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1);
             padding: 8px 18px; border-radius: 12px; 
-            color: rgba(255, 255, 255, 0.7); /* 좀 더 진하게 */
+            color: rgba(255, 255, 255, 0.7); 
             font-size: 0.85rem; 
             font-weight: 700; /* 진하게 */
             cursor: pointer; transition: all 0.2s;
@@ -119,13 +117,7 @@
 <body>
 
 <div class="app-container">
-    <svg class="watermark-svg" viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg">
-        <path d="M100 200 C100 120 180 120 200 200 C220 280 300 280 300 200 C300 120 220 120 200 200 C180 280 100 280 100 200" 
-              fill="none" stroke="white" stroke-width="0.8" />
-        <circle cx="200" cy="200" r="145" fill="none" stroke="white" stroke-width="0.4" />
-        <circle cx="200" cy="200" r="175" fill="none" stroke="white" stroke-width="0.2" stroke-dasharray="8,8" />
-        <text x="50%" y="210" text-anchor="middle" fill="white" font-size="28" font-weight="100" style="letter-spacing: 12px; opacity: 0.8;">ELITE</text>
-    </svg>
+    <img src="lotto_logo.png" alt="Lotto Elite Logo" class="background-logo">
 
     <header>
         <h1>LOTTO ELITE</h1>

@@ -3,13 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Lotto Elite - iPhone 17 Air</title>
+    <title>Lotto Elite - Premium Edition</title>
+    
+    <link rel="apple-touch-icon" href="icon_clean.png">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
     <style>
         :root {
             --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            /* 글래스모피즘 효과를 위한 배경 */
             --glass-bg: rgba(255, 255, 255, 0.08);
             --glass-border: rgba(255, 255, 255, 0.15);
             --accent-color: #00f2fe;
+            
             /* 로또 공 색상 가이드 */
             --color-1: #fbc400; /* 1-10 */
             --color-2: #69c8f2; /* 11-20 */
@@ -35,39 +42,44 @@
             position: relative; overflow: hidden;
         }
 
-        /* 세밀하게 다듬은 프리미엄 SVG 워터마크 */
+        /* [요청반영 1] 처음 디자인한 세련된 SVG 워터마크 통합 */
         .watermark-svg {
             position: absolute;
-            top: 55%; left: 50%;
+            top: 50%; left: 50%;
             transform: translate(-50%, -50%);
-            width: 90%; opacity: 0.04;
+            width: 85%; opacity: 0.06; /* 은은하게 (6%) */
             z-index: -1; pointer-events: none;
         }
 
+        /* [요청반영 2] 앱 타이틀 글씨 진하게 */
         header h1 {
-            text-align: center; font-weight: 200; font-size: 1.6rem; letter-spacing: 7px; margin: 0 0 40px 0;
+            text-align: center; 
+            font-weight: 800; /* 아주 진하게 */
+            font-size: 1.8rem; letter-spacing: 5px; margin: 0 0 40px 0;
             background: linear-gradient(to right, #fff, var(--accent-color));
             -webkit-background-clip: text; -webkit-text-fill-color: transparent;
         }
 
-        /* 상단 번호 표시 영역 */
         .number-display { display: flex; justify-content: space-between; gap: 5px; margin-bottom: 50px; }
 
         .ball {
             width: 48px; height: 48px; background: rgba(255,255,255,0.05); border-radius: 50%;
             display: flex; justify-content: center; align-items: center; color: #fff;
-            font-weight: 800; font-size: 1.1rem; box-shadow: 0 8px 15px rgba(0,0,0,0.2);
+            font-weight: 800; font-size: 1.2rem; box-shadow: 0 8px 15px rgba(0,0,0,0.2);
             transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             transform: scale(0);
         }
 
         .ball.show { transform: scale(1.1); }
 
-        /* 로그 영역 */
         .history-section { flex-grow: 1; overflow: hidden; }
+        
+        /* [요청반영 2] 로그 제목 글씨 진하게 */
         .history-title {
-            font-size: 0.7rem; color: rgba(255,255,255,0.3); margin-bottom: 15px;
-            text-transform: uppercase; letter-spacing: 2px; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 5px;
+            font-size: 0.8rem; 
+            font-weight: 700; /* 진하게 */
+            color: rgba(255,255,255,0.6); margin-bottom: 15px;
+            text-transform: uppercase; letter-spacing: 2px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 5px;
         }
 
         .log-item {
@@ -76,23 +88,28 @@
             border: 1px solid rgba(255,255,255,0.03);
         }
 
-        .log-num { font-weight: 900; font-size: 1.1rem; text-shadow: 0 0 10px rgba(0,0,0,0.5); }
+        .log-num { font-weight: 900; font-size: 1.2rem; text-shadow: 0 0 10px rgba(0,0,0,0.5); }
 
         @keyframes slideIn { from { opacity: 0; transform: translateX(-10px); } to { opacity: 1; transform: translateX(0); } }
 
-        /* 컨트롤 버튼 영역 */
         .controls { display: flex; flex-direction: column; gap: 15px; align-items: flex-start; z-index: 10; }
 
+        /* [요청반영 2] 생성 버튼 글씨 진하게 */
         .generate-btn {
             width: 100%; background: var(--primary-gradient); border: none; padding: 22px;
-            border-radius: 22px; color: white; font-size: 1.2rem; font-weight: 700;
+            border-radius: 22px; color: white; font-size: 1.3rem; 
+            font-weight: 800; /* 아주 진하게 */
             cursor: pointer; transition: all 0.3s ease; box-shadow: 0 15px 35px rgba(118, 75, 162, 0.3);
         }
 
+        /* [요청반영 2] 초기화 버튼 글씨 진하게 */
         .reset-btn {
             background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1);
-            padding: 8px 18px; border-radius: 12px; color: rgba(255, 255, 255, 0.4);
-            font-size: 0.8rem; font-weight: 500; cursor: pointer; transition: all 0.2s;
+            padding: 8px 18px; border-radius: 12px; 
+            color: rgba(255, 255, 255, 0.7); /* 좀 더 진하게 */
+            font-size: 0.85rem; 
+            font-weight: 700; /* 진하게 */
+            cursor: pointer; transition: all 0.2s;
         }
 
         .reset-btn:active { background: rgba(255, 70, 70, 0.15); color: #ff7272; }
@@ -107,7 +124,7 @@
               fill="none" stroke="white" stroke-width="0.8" />
         <circle cx="200" cy="200" r="145" fill="none" stroke="white" stroke-width="0.4" />
         <circle cx="200" cy="200" r="175" fill="none" stroke="white" stroke-width="0.2" stroke-dasharray="8,8" />
-        <text x="50%" y="208" text-anchor="middle" fill="white" font-size="24" font-weight="100" style="letter-spacing: 12px; opacity: 0.8;">ELITE</text>
+        <text x="50%" y="210" text-anchor="middle" fill="white" font-size="28" font-weight="100" style="letter-spacing: 12px; opacity: 0.8;">ELITE</text>
     </svg>
 
     <header>
@@ -142,6 +159,9 @@
     }
 
     function generateLotto() {
+        // 아이폰 햅틱 진동 효과 (지원 기기 브라우저용)
+        if (window.navigator.vibrate) window.navigator.vibrate(10);
+
         let numbers = [];
         while(numbers.length < 6) {
             let r = Math.floor(Math.random() * 45) + 1;

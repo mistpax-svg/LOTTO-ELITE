@@ -32,13 +32,11 @@
             display: flex; flex-direction: column; padding: 35px 25px; box-sizing: border-box;
             box-shadow: 0 40px 100px rgba(0,0,0,0.6); position: relative; overflow: hidden;
         }
-        
         .background-logo {
             position: absolute; top: 55%; left: 50%; transform: translate(-50%, -50%);
             width: 100%; height: 100%; opacity: 0.15; z-index: -1; pointer-events: none;
             object-fit: contain; filter: contrast(1.2) brightness(1.1) saturate(1.3);
         }
-
         header h1 {
             text-align: center; font-weight: 800; font-size: 1.8rem; letter-spacing: 5px; margin: 0 0 40px 0;
             background: linear-gradient(to right, #fff, var(--accent-color));
@@ -55,7 +53,6 @@
         .history-section { flex-grow: 1; overflow-y: auto; padding-right: 5px; }
         .history-section::-webkit-scrollbar { width: 4px; }
         .history-section::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 10px; }
-
         .history-title {
             font-size: 0.8rem; font-weight: 700; color: rgba(255,255,255,0.6); margin-bottom: 15px;
             text-transform: uppercase; letter-spacing: 2px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 5px;
@@ -63,9 +60,7 @@
         .log-item {
             background: rgba(0,0,0,0.4); padding: 15px 10px; border-radius: 18px; margin-bottom: 12px;
             display: flex; justify-content: space-around; border: 1px solid rgba(255,255,255,0.03);
-            animation: slideIn 0.3s ease-out;
         }
-        @keyframes slideIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
         .log-num { font-weight: 900; font-size: 1.2rem; }
         .generate-btn {
             width: 100%; background: var(--primary-gradient); border: none; padding: 22px;
@@ -94,7 +89,8 @@
 </div>
 
 <script>
-    let logData = [];
+    // 이 배열이 정상적으로 비어있어야 로그가 제대로 쌓입니다.
+    let logData = []; 
 
     function getBallColor(num) {
         if (num <= 10) return '#fbc400';
@@ -104,73 +100,36 @@
         return '#b0d840';
     }
 
-    // [강화] async/await를 사용하여 순서를 완벽하게 통제합니다.
-    async function runEliteAnalysis() {
+    function runEliteAnalysis() {
         const btn = document.getElementById('genBtn');
-        
-        // 1. 방어: 이미 버튼이 비활성화 상태면 중복 클릭 무시
         if (btn.disabled) return;
         
-        btn.textContent = "빅데이터 분석 중...";
+        btn.textContent = "빅데이터 통계 분석 중...";
         btn.disabled = true;
 
-        // 2. 진동 에러 원천 차단 (에러가 나도 앱이 멈추지 않도록 강력한 보호막 적용)
-        try { 
-            if (window.navigator && typeof window.navigator.vibrate === 'function') {
-                window.navigator.vibrate(15); 
+        try { if (navigator.vibrate) navigator.vibrate(15); } catch(e) {}
+
+        // 분석 애니메이션을 위한 약간의 딜레이 후 실행
+        setTimeout(() => {
+            try {
+                const result = calculateNumbers();
+                displayBalls(result);
+            } catch (e) {
+                console.error("에러 발생:", e);
+                alert("일시적인 오류가 발생했습니다.");
+            } finally {
+                // 무슨 일이 있어도 버튼은 다시 활성화됩니다.
+                btn.textContent = "로또번호 분석 생성";
+                btn.disabled = false;
             }
-        } catch(e) { console.log("진동 미지원 기기"); }
-
-        // 3. 브라우저가 화면 글자를 바꿀 시간을 0.05초 줍니다.
-        await new Promise(resolve => setTimeout(resolve, 50));
-
-        try {
-            // 4. 번호 계산
-            const result = calculateNumbers();
-            
-            // 5. 공 숨기기 (애니메이션 초기화)
-            const balls = document.querySelectorAll('.ball');
-            balls.forEach(ball => {
-                ball.classList.remove('show');
-                ball.style.transform = 'scale(0)';
-            });
-
-            // 6. 공이 완전히 사라질 때까지 0.2초 대기 (애니메이션 꼬임 방지)
-            await new Promise(resolve => setTimeout(resolve, 200));
-
-            // 7. 공을 0.1초 간격으로 순차적으로 팝업!
-            for (let i = 0; i < balls.length; i++) {
-                setTimeout(() => {
-                    balls[i].textContent = result[i];
-                    balls[i].style.backgroundColor = getBallColor(result[i]);
-                    balls[i].style.color = (result[i] <= 10) ? '#333' : '#fff';
-                    balls[i].classList.add('show');
-                    balls[i].style.transform = 'scale(1.1)';
-                }, i * 100);
-            }
-
-            // 8. 하단 기록(Log)에 번호 5개 누적 추가
-            updateLog(result);
-
-            // 9. 공 6개가 모두 나타날 때까지(최소 0.8초) 넉넉히 기다렸다가 버튼 활성화!
-            await new Promise(resolve => setTimeout(resolve, 800));
-
-        } catch (e) {
-            console.error("생성 중 치명적 오류:", e);
-            alert("일시적인 오류가 발생했습니다. 다시 눌러주세요.");
-        } finally {
-            // 10. 무슨 일이 있어도 버튼은 반드시 부활합니다.
-            btn.disabled = false;
-            btn.textContent = "로또번호 분석 생성";
-        }
+        }, 300);
     }
 
     function calculateNumbers() {
         const hotPool = [1, 34, 43, 27, 18, 17, 13, 39, 33, 45, 12, 14, 20, 26, 10];
         const coldPool = [9, 22, 23, 29, 30, 32, 41, 2, 4, 15];
         
-        // 최대 1000번까지만 안전하게 시도합니다.
-        for (let attempts = 0; attempts < 1000; attempts++) {
+        for (let attempts = 0; attempts < 500; attempts++) {
             let tempSet = new Set();
             while(tempSet.size < 3) tempSet.add(hotPool[Math.floor(Math.random() * hotPool.length)]);
             while(tempSet.size < 5) tempSet.add(coldPool[Math.floor(Math.random() * coldPool.length)]);
@@ -179,19 +138,31 @@
             let finalNums = Array.from(tempSet).sort((a,b) => a-b);
             let sum = finalNums.reduce((a,b) => a+b, 0);
             
-            // 통계적 합계 구간(110~185) 통과 시 즉시 반환
-            if (sum >= 110 && sum <= 185) {
-                return finalNums;
-            }
+            if (sum >= 110 && sum <= 185) return finalNums;
         }
-        // 만약 1000번 안에 못 찾으면 기본 랜덤값 반환 (앱 다운 방지용)
         return [3, 15, 23, 31, 38, 42]; 
+    }
+
+    function displayBalls(numbers) {
+        const balls = document.querySelectorAll('.ball');
+        balls.forEach((ball, index) => {
+            ball.classList.remove('show');
+            ball.style.transform = 'scale(0)';
+            setTimeout(() => {
+                ball.textContent = numbers[index];
+                ball.style.backgroundColor = getBallColor(numbers[index]);
+                ball.style.color = (numbers[index] <= 10) ? '#333' : '#fff';
+                ball.classList.add('show');
+                ball.style.transform = 'scale(1.1)';
+            }, index * 80);
+        });
+        updateLog(numbers);
     }
 
     function updateLog(nums) {
         const logContainer = document.getElementById('logContainer');
-        logData.unshift(nums); // 새 번호를 맨 위에 추가
-        if (logData.length > 5) logData.pop(); // 5개가 넘어가면 가장 오래된 것 삭제
+        logData.unshift(nums); 
+        if (logData.length > 5) logData.pop(); 
         
         logContainer.innerHTML = logData.map(entry => `
             <div class="log-item" style="animation: slideIn 0.3s ease-out;">

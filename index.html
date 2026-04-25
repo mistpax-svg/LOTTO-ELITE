@@ -104,43 +104,49 @@
         return '#b0d840';
     }
 
-    // [개선] 멈춤 현상을 방지하기 위해 로직을 분리했습니다.
     function runEliteAnalysis() {
         const btn = document.getElementById('genBtn');
         btn.textContent = "빅데이터 통계 분석 중...";
-        btn.disabled = true;
+        btn.disabled = true; // 버튼 비활성화
 
         if (navigator.vibrate) navigator.vibrate(20);
 
+        // [해결] setTimeout을 통해 브라우저가 숨을 쉴 틈을 줍니다.
         setTimeout(() => {
-            const result = calculateNumbers(); // 번호 생성 로직 분리
-            displayBalls(result);
-            
-            // 번호 표시가 시작된 후 버튼을 다시 활성화
-            btn.disabled = false;
-            btn.textContent = "로또번호 분석 생성";
-        }, 600);
+            try {
+                const result = calculateNumbers();
+                displayBalls(result);
+            } catch (e) {
+                console.error(e);
+            } finally {
+                // [해결] 어떤 경우에도 버튼은 다시 켜지도록 보장합니다.
+                btn.disabled = false;
+                btn.textContent = "로또번호 분석 생성";
+            }
+        }, 300);
     }
 
-    // [핵심] 통계 필터를 통과할 때까지 반복 계산하는 내부 함수
     function calculateNumbers() {
-        const hotNumbers = [1, 34, 43, 27, 18, 17, 13, 39, 33, 45, 12, 14, 20, 26, 10];
-        const coldNumbers = [9, 22, 23, 29, 30, 32, 41, 2, 4, 15];
+        const hotPool = [1, 34, 43, 27, 18, 17, 13, 39, 33, 45, 12, 14, 20, 26, 10];
+        const coldPool = [9, 22, 23, 29, 30, 32, 41, 2, 4, 15];
         
         let finalNums;
-        let sum = 0;
+        let attempts = 0;
         
-        // 통계적으로 가장 많이 발생하는 합계 구간(110~185)에 들 때까지 반복
-        do {
+        // [해결] 무한 루프 방지: 최대 1000번만 시도하고 안되면 그냥 내보냅니다.
+        while (attempts < 1000) {
+            attempts++;
             let tempSet = new Set();
-            while(tempSet.size < 3) tempSet.add(hotNumbers[Math.floor(Math.random() * hotNumbers.length)]);
-            while(tempSet.size < 5) tempSet.add(coldNumbers[Math.floor(Math.random() * coldNumbers.length)]);
+            while(tempSet.size < 3) tempSet.add(hotPool[Math.floor(Math.random() * hotPool.length)]);
+            while(tempSet.size < 5) tempSet.add(coldPool[Math.floor(Math.random() * coldPool.length)]);
             while(tempSet.size < 6) tempSet.add(Math.floor(Math.random() * 45) + 1);
             
             finalNums = Array.from(tempSet).sort((a,b) => a-b);
-            sum = finalNums.reduce((a,b) => a+b, 0);
-        } while (sum < 110 || sum > 185);
-
+            let sum = finalNums.reduce((a,b) => a+b, 0);
+            
+            // 합계 구간 체크
+            if (sum >= 110 && sum <= 185) break;
+        }
         return finalNums;
     }
 
@@ -160,11 +166,10 @@
         updateLog(numbers);
     }
 
-    // [개선] 생성된 번호를 기록에 누적하여 최대 5개까지 표시
     function updateLog(nums) {
         const logContainer = document.getElementById('logContainer');
-        logData.unshift(nums); // 새로운 번호를 맨 앞에 추가
-        if (logData.length > 5) logData.pop(); // 5개 넘으면 마지막 삭제
+        logData.unshift(nums);
+        if (logData.length > 5) logData.pop();
         
         logContainer.innerHTML = logData.map(entry => `
             <div class="log-item">

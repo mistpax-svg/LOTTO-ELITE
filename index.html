@@ -6,19 +6,12 @@
     <title>Lotto Elite - Premium Pro</title>
     
     <link rel="icon" href="lotto_logo.png" type="image/png">
-    
     <link rel="apple-touch-icon" href="lotto_logo.png">
-    
-    <meta name="mobile-web-app-capable" content="yes">
     <link rel="shortcut icon" sizes="192x192" href="lotto_logo.png">
-    
+    <meta name="mobile-web-app-capable" content="yes">
     <meta name="theme-color" content="#1a1a2e"> 
 
     <style>
-        /* ... 스타일 코드 ... */
-
-    <style>
-        /* 세현님의 프리미엄 스타일 유지 */
         :root {
             --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             --glass-bg: rgba(255, 255, 255, 0.08);
@@ -39,6 +32,13 @@
             display: flex; flex-direction: column; padding: 35px 25px; box-sizing: border-box;
             box-shadow: 0 40px 100px rgba(0,0,0,0.6); position: relative; overflow: hidden;
         }
+        
+        .background-logo {
+            position: absolute; top: 55%; left: 50%; transform: translate(-50%, -50%);
+            width: 100%; height: 100%; opacity: 0.15; z-index: -1; pointer-events: none;
+            object-fit: contain; filter: contrast(1.2) brightness(1.1) saturate(1.3);
+        }
+
         header h1 {
             text-align: center; font-weight: 800; font-size: 1.8rem; letter-spacing: 5px; margin: 0 0 40px 0;
             background: linear-gradient(to right, #fff, var(--accent-color));
@@ -52,7 +52,10 @@
             transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); transform: scale(0);
         }
         .ball.show { transform: scale(1.1); }
-        .history-section { flex-grow: 1; overflow: hidden; }
+        .history-section { flex-grow: 1; overflow-y: auto; padding-right: 5px; }
+        .history-section::-webkit-scrollbar { width: 4px; }
+        .history-section::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 10px; }
+
         .history-title {
             font-size: 0.8rem; font-weight: 700; color: rgba(255,255,255,0.6); margin-bottom: 15px;
             text-transform: uppercase; letter-spacing: 2px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 5px;
@@ -60,18 +63,22 @@
         .log-item {
             background: rgba(0,0,0,0.4); padding: 15px 10px; border-radius: 18px; margin-bottom: 12px;
             display: flex; justify-content: space-around; border: 1px solid rgba(255,255,255,0.03);
+            animation: slideIn 0.3s ease-out;
         }
+        @keyframes slideIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
         .log-num { font-weight: 900; font-size: 1.2rem; }
         .generate-btn {
             width: 100%; background: var(--primary-gradient); border: none; padding: 22px;
             border-radius: 22px; color: white; font-size: 1.3rem; font-weight: 800;
             cursor: pointer; transition: all 0.3s ease; box-shadow: 0 15px 35px rgba(118, 75, 162, 0.3);
         }
+        .generate-btn:disabled { opacity: 0.7; cursor: not-allowed; }
     </style>
 </head>
 <body>
 
 <div class="app-container">
+    <img src="lotto_logo.png" alt="Lotto Elite Logo" class="background-logo" onerror="this.style.display='none'">
     <header><h1>LOTTO ELITE</h1></header>
     <div class="number-display" id="ballContainer">
         <div class="ball">?</div><div class="ball">?</div><div class="ball">?</div>
@@ -87,7 +94,7 @@
 </div>
 
 <script>
-    let logData = ["https://script.google.com/macros/s/AKfycbx4oObtImQPjmxz7pL4iCzgJXiMYg333cZIa9ReYL3qk1mNAmXoXKR_-fWBRFYSgB9E2g/exec"];
+    let logData = [];
 
     function getBallColor(num) {
         if (num <= 10) return '#fbc400';
@@ -97,7 +104,7 @@
         return '#b0d840';
     }
 
-    // [핵심] 외부 서버 없이 앱 내부에서 즉시 실행되는 빅데이터 분석 로직
+    // [개선] 멈춤 현상을 방지하기 위해 로직을 분리했습니다.
     function runEliteAnalysis() {
         const btn = document.getElementById('genBtn');
         btn.textContent = "빅데이터 통계 분석 중...";
@@ -105,40 +112,36 @@
 
         if (navigator.vibrate) navigator.vibrate(20);
 
-        // 실제 역대 당첨 데이터 기반 통계 그룹 (Hot & Cold)
-        const hotNumbers = [1, 34, 43, 27, 18, 17, 13, 39, 33, 45, 12, 14, 20, 26, 10]; // 최다 빈도
-        const coldNumbers = [9, 22, 23, 29, 30, 32, 41, 2, 4, 15]; // 최근 미출현
-
         setTimeout(() => {
-            let finalNums = new Set();
+            const result = calculateNumbers(); // 번호 생성 로직 분리
+            displayBalls(result);
             
-            // 전략 1: 역대 최다 빈도수에서 3개 추출
-            while(finalNums.size < 3) {
-                finalNums.add(hotNumbers[Math.floor(Math.random() * hotNumbers.length)]);
-            }
-            // 전략 2: 최근 미출현 번호에서 2개 추출
-            while(finalNums.size < 5) {
-                finalNums.add(coldNumbers[Math.floor(Math.random() * coldNumbers.length)]);
-            }
-            // 전략 3: 의외성을 위해 나머지 1개 완전 랜덤
-            while(finalNums.size < 6) {
-                finalNums.add(Math.floor(Math.random() * 45) + 1);
-            }
-
-            const sortedResult = Array.from(finalNums).sort((a,b) => a-b);
-            
-            // 합계 필터링 (120~180 사이가 아니면 다시 생성 - 통계적 최빈 구간)
-            const sum = sortedResult.reduce((a,b) => a+b, 0);
-            if (sum < 110 || sum > 185) {
-                btn.disabled = false;
-                runEliteAnalysis(); 
-                return;
-            }
-
-            displayBalls(sortedResult);
+            // 번호 표시가 시작된 후 버튼을 다시 활성화
             btn.disabled = false;
             btn.textContent = "로또번호 분석 생성";
-        }, 600); // 분석하는 느낌을 주기 위한 짧은 대기
+        }, 600);
+    }
+
+    // [핵심] 통계 필터를 통과할 때까지 반복 계산하는 내부 함수
+    function calculateNumbers() {
+        const hotNumbers = [1, 34, 43, 27, 18, 17, 13, 39, 33, 45, 12, 14, 20, 26, 10];
+        const coldNumbers = [9, 22, 23, 29, 30, 32, 41, 2, 4, 15];
+        
+        let finalNums;
+        let sum = 0;
+        
+        // 통계적으로 가장 많이 발생하는 합계 구간(110~185)에 들 때까지 반복
+        do {
+            let tempSet = new Set();
+            while(tempSet.size < 3) tempSet.add(hotNumbers[Math.floor(Math.random() * hotNumbers.length)]);
+            while(tempSet.size < 5) tempSet.add(coldNumbers[Math.floor(Math.random() * coldNumbers.length)]);
+            while(tempSet.size < 6) tempSet.add(Math.floor(Math.random() * 45) + 1);
+            
+            finalNums = Array.from(tempSet).sort((a,b) => a-b);
+            sum = finalNums.reduce((a,b) => a+b, 0);
+        } while (sum < 110 || sum > 185);
+
+        return finalNums;
     }
 
     function displayBalls(numbers) {
@@ -157,10 +160,12 @@
         updateLog(numbers);
     }
 
+    // [개선] 생성된 번호를 기록에 누적하여 최대 5개까지 표시
     function updateLog(nums) {
         const logContainer = document.getElementById('logContainer');
-        logData.unshift(nums);
-        if (logData.length > 5) logData.pop();
+        logData.unshift(nums); // 새로운 번호를 맨 앞에 추가
+        if (logData.length > 5) logData.pop(); // 5개 넘으면 마지막 삭제
+        
         logContainer.innerHTML = logData.map(entry => `
             <div class="log-item">
                 ${entry.map(n => `<span class="log-num" style="color:${getBallColor(n)}">${n}</span>`).join('')}

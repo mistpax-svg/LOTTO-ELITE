@@ -104,75 +104,97 @@
         return '#b0d840';
     }
 
-    function runEliteAnalysis() {
+    // [강화] async/await를 사용하여 순서를 완벽하게 통제합니다.
+    async function runEliteAnalysis() {
         const btn = document.getElementById('genBtn');
-        btn.textContent = "빅데이터 통계 분석 중...";
-        btn.disabled = true; // 버튼 비활성화
+        
+        // 1. 방어: 이미 버튼이 비활성화 상태면 중복 클릭 무시
+        if (btn.disabled) return;
+        
+        btn.textContent = "빅데이터 분석 중...";
+        btn.disabled = true;
 
-        if (navigator.vibrate) navigator.vibrate(20);
-
-        // [해결] setTimeout을 통해 브라우저가 숨을 쉴 틈을 줍니다.
-        setTimeout(() => {
-            try {
-                const result = calculateNumbers();
-                displayBalls(result);
-            } catch (e) {
-                console.error(e);
-            } finally {
-                // [해결] 어떤 경우에도 버튼은 다시 켜지도록 보장합니다.
-                btn.disabled = false;
-                btn.textContent = "로또번호 분석 생성";
+        // 2. 진동 에러 원천 차단 (에러가 나도 앱이 멈추지 않도록 강력한 보호막 적용)
+        try { 
+            if (window.navigator && typeof window.navigator.vibrate === 'function') {
+                window.navigator.vibrate(15); 
             }
-        }, 300);
+        } catch(e) { console.log("진동 미지원 기기"); }
+
+        // 3. 브라우저가 화면 글자를 바꿀 시간을 0.05초 줍니다.
+        await new Promise(resolve => setTimeout(resolve, 50));
+
+        try {
+            // 4. 번호 계산
+            const result = calculateNumbers();
+            
+            // 5. 공 숨기기 (애니메이션 초기화)
+            const balls = document.querySelectorAll('.ball');
+            balls.forEach(ball => {
+                ball.classList.remove('show');
+                ball.style.transform = 'scale(0)';
+            });
+
+            // 6. 공이 완전히 사라질 때까지 0.2초 대기 (애니메이션 꼬임 방지)
+            await new Promise(resolve => setTimeout(resolve, 200));
+
+            // 7. 공을 0.1초 간격으로 순차적으로 팝업!
+            for (let i = 0; i < balls.length; i++) {
+                setTimeout(() => {
+                    balls[i].textContent = result[i];
+                    balls[i].style.backgroundColor = getBallColor(result[i]);
+                    balls[i].style.color = (result[i] <= 10) ? '#333' : '#fff';
+                    balls[i].classList.add('show');
+                    balls[i].style.transform = 'scale(1.1)';
+                }, i * 100);
+            }
+
+            // 8. 하단 기록(Log)에 번호 5개 누적 추가
+            updateLog(result);
+
+            // 9. 공 6개가 모두 나타날 때까지(최소 0.8초) 넉넉히 기다렸다가 버튼 활성화!
+            await new Promise(resolve => setTimeout(resolve, 800));
+
+        } catch (e) {
+            console.error("생성 중 치명적 오류:", e);
+            alert("일시적인 오류가 발생했습니다. 다시 눌러주세요.");
+        } finally {
+            // 10. 무슨 일이 있어도 버튼은 반드시 부활합니다.
+            btn.disabled = false;
+            btn.textContent = "로또번호 분석 생성";
+        }
     }
 
     function calculateNumbers() {
         const hotPool = [1, 34, 43, 27, 18, 17, 13, 39, 33, 45, 12, 14, 20, 26, 10];
         const coldPool = [9, 22, 23, 29, 30, 32, 41, 2, 4, 15];
         
-        let finalNums;
-        let attempts = 0;
-        
-        // [해결] 무한 루프 방지: 최대 1000번만 시도하고 안되면 그냥 내보냅니다.
-        while (attempts < 1000) {
-            attempts++;
+        // 최대 1000번까지만 안전하게 시도합니다.
+        for (let attempts = 0; attempts < 1000; attempts++) {
             let tempSet = new Set();
             while(tempSet.size < 3) tempSet.add(hotPool[Math.floor(Math.random() * hotPool.length)]);
             while(tempSet.size < 5) tempSet.add(coldPool[Math.floor(Math.random() * coldPool.length)]);
             while(tempSet.size < 6) tempSet.add(Math.floor(Math.random() * 45) + 1);
             
-            finalNums = Array.from(tempSet).sort((a,b) => a-b);
+            let finalNums = Array.from(tempSet).sort((a,b) => a-b);
             let sum = finalNums.reduce((a,b) => a+b, 0);
             
-            // 합계 구간 체크
-            if (sum >= 110 && sum <= 185) break;
+            // 통계적 합계 구간(110~185) 통과 시 즉시 반환
+            if (sum >= 110 && sum <= 185) {
+                return finalNums;
+            }
         }
-        return finalNums;
-    }
-
-    function displayBalls(numbers) {
-        const balls = document.querySelectorAll('.ball');
-        balls.forEach((ball, index) => {
-            ball.classList.remove('show');
-            ball.style.transform = 'scale(0)';
-            setTimeout(() => {
-                ball.textContent = numbers[index];
-                ball.style.backgroundColor = getBallColor(numbers[index]);
-                ball.style.color = (numbers[index] <= 10) ? '#333' : '#fff';
-                ball.classList.add('show');
-                ball.style.transform = 'scale(1.1)';
-            }, index * 100);
-        });
-        updateLog(numbers);
+        // 만약 1000번 안에 못 찾으면 기본 랜덤값 반환 (앱 다운 방지용)
+        return [3, 15, 23, 31, 38, 42]; 
     }
 
     function updateLog(nums) {
         const logContainer = document.getElementById('logContainer');
-        logData.unshift(nums);
-        if (logData.length > 5) logData.pop();
+        logData.unshift(nums); // 새 번호를 맨 위에 추가
+        if (logData.length > 5) logData.pop(); // 5개가 넘어가면 가장 오래된 것 삭제
         
         logContainer.innerHTML = logData.map(entry => `
-            <div class="log-item">
+            <div class="log-item" style="animation: slideIn 0.3s ease-out;">
                 ${entry.map(n => `<span class="log-num" style="color:${getBallColor(n)}">${n}</span>`).join('')}
             </div>
         `).join('');
